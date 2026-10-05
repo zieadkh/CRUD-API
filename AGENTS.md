@@ -22,7 +22,9 @@ Node.js + Express 5 + Mongoose (MongoDB) REST API. ESM (`"type": "module"`).
 - `config/database.js` calls `process.exit(1)` on failure, so the `try/catch` in `index.js` will rarely see a connection error.
 - `user.model.js` uses `maxLenght` (misspelled) twice — those validators silently do nothing. Real constraints are `minLength` only.
 - `registerUser` sets `loggedIn: false`, but `loggedIn` is not in the user schema — it is stripped by Mongoose.
-- Auth uses JWT: `loginUser` returns `accessToken` (15m) + `refreshToken` (7d), `POST /api/v1/users/refresh` rotates both. Secrets/expiry come from `.env` (`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`). `logoutuser` is stateless — no token/session is cleared; clients must discard tokens.
+- Auth uses JWT: `loginUser` returns `accessToken` (15m) + `refreshToken` (7d), `POST /api/v1/users/refresh` rotates both (no reuse detection). Secrets/expiry come from `.env`. `logoutuser` is stateless — no token/session is cleared; clients must discard tokens. There is no auth middleware anywhere: `/api/v1/posts/*` routes are unauthenticated.
 - Passwords: hashed via `pre("save")` hook; `comparePassword` is an instance method on the model. Re-saving a user re-hashes only when password is modified.
 - `bcrypt` is a native module — if you change OS/arch or reinstall, run `npm rebuild bcrypt`.
 - `nodemon` is listed under `dependencies` (not devDependencies) — `npm run dev` works because of it; don't move it without updating scripts.
+- `.env` contains live-looking MongoDB Atlas credentials and JWT secrets; it is gitignored — never commit it or paste its values into code/docs.
+- Posts API uses `PATCH /api/v1/posts/update/:id` and `DELETE /api/v1/posts/delete/:id` (action verbs in paths), not RESTful nesting.
