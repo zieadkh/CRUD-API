@@ -22,7 +22,7 @@ Node.js + Express 5 + Mongoose (MongoDB) REST API. ESM (`"type": "module"`).
 - `config/database.js` calls `process.exit(1)` on failure, so the `try/catch` in `index.js` will rarely see a connection error.
 - `user.model.js` uses `maxLenght` (misspelled) twice — those validators silently do nothing. Real constraints are `minLength` only.
 - `registerUser` sets `loggedIn: false`, but `loggedIn` is not in the user schema — it is stripped by Mongoose.
-- Auth uses JWT: `loginUser` returns `accessToken` (15m) + `refreshToken` (7d), `POST /api/v1/users/refresh` rotates both (no reuse detection). Secrets/expiry come from `.env`. `logoutuser` is stateless — no token/session is cleared; clients must discard tokens. There is no auth middleware anywhere: `/api/v1/posts/*` routes are unauthenticated.
+- Auth uses JWT: `loginUser` returns `accessToken` (15m) + `refreshToken` (7d), `POST /api/v1/users/refresh` rotates both (no reuse detection). Secrets/expiry come from `.env`. `logoutuser` is stateless — no token/session is cleared; clients must discard tokens. No auth middleware on public user/post routes. Admin endpoints under `/api/v1/admin` use `middleware/auth.middleware.js` (`verifyAccessToken` + `requireAdmin`); admin = `user.role === "admin"` (set manually in DB, no public promote endpoint).
 - Passwords: hashed via `pre("save")` hook; `comparePassword` is an instance method on the model. Re-saving a user re-hashes only when password is modified.
 - `bcrypt` is a native module — if you change OS/arch or reinstall, run `npm rebuild bcrypt`.
 - `nodemon` is listed under `dependencies` (not devDependencies) — `npm run dev` works because of it; don't move it without updating scripts.
